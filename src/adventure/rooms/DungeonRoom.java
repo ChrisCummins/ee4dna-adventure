@@ -4,8 +4,6 @@ import adventure.CBRoomServer;
 import adventure.Player;
 import adventure.RoomImpl;
 import adventure.actions.Dragon;
-import adventure.actions.Minstrel;
-import adventure.actions.SciFi;
 
 /**
  * A room type which represents a simple dungeon space, implementing a somewhat
@@ -50,9 +48,7 @@ public class DungeonRoom extends RoomImpl {
         this.mazeHeight = mazeHeight;
         this.invalidNo = mazeHeight * mazeWidth + 1;
 
-        // Our room behaviour:
-        this.actions.add(new Minstrel(this));
-        this.actions.add(new SciFi(this));
+        // Room behaviour extensions:
         this.actions.add(new Dragon(this));
     }
 
