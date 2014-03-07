@@ -132,7 +132,7 @@ public class RoomImpl extends RoomPOA {
     @Override
     public void item_removed(final Item i) {
         SystemIO.log("item_removed(" + i.item_name() + ")");
-        items.add(i);
+        items.remove(i);
     }
 
     @Override
