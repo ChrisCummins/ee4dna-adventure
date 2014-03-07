@@ -1,0 +1,212 @@
+/*
+ * Adventure game IDL definitions
+ *
+ */
+
+module adventure
+{
+     // This is the response type for communication from rooms back to the user frontend.
+     // By allowing an array of strings to be sent, the room implementation can group
+     // responses and thus reduce the number of calls needed to communicate with the frontend.
+
+     typedef sequence<string> string_sequence;
+
+     // Rooms are identified by a RoomID. It contains the user name of the owner of the
+     // room server, who is making this room available, and an integer number to identify 
+     // a room within this particular room server. When players move from one room server
+     // to another, they can only be transferred to room number 0 on the other server.
+
+     struct RoomID
+     {
+          string user_name;
+          long room_number;
+     };
+
+     // registration_failed is thrown, when a room server tries to connect to the game server, 
+     // but does not present valid credentials.
+
+     exception registration_failed
+     {
+          string reason;
+     };
+
+     // room_not_found is thrown, if a search method for a room can't find
+     // the room in question. This could either be, because the room does
+     // not exist or because the room server for this room is currently not
+     // reachable.
+
+     exception room_not_found
+     {
+          string reason;
+     };
+
+     // Forward declaration for Player
+     
+     interface Player;
+
+     // If a room requests an operation on a player, who isn't in the room at the
+     // time, this exception is thrown
+
+     exception player_not_in_room
+     {
+          Player p;
+     };
+
+     // If a room requests an operation on a player, which isn't possible at this
+     // time, this exception is thrown
+
+     exception cant_move_player
+     {
+          string reason;
+     };
+
+     // If a room requests an operation on an item, which isn't possible at this
+     // time, this exception is thrown
+
+     exception cant_move_item
+     {
+          string reason;
+     };
+
+     // All interfaces supporting a ping type mechanism derive from
+     // interface IPing
+
+     interface IPing
+     {
+          // ping() is an empty method to verify, if an object is running and
+          // reachable
+
+          void ping();
+     };
+
+     // The Player objects are held in the GameServer and contain all
+     // relevant information of the location and state of a player.
+
+     interface Player : IPing
+     {
+          readonly attribute string user_name;
+          readonly attribute string real_name;
+          readonly attribute RoomID location;
+     };
+
+     // Forward declaration for Item
+     
+     interface Item;
+
+     // The Room objects are held in the room server and contain all
+     // relevant information about a room.
+
+     interface Room : IPing
+     {
+          // The game server informs the room about players
+          // entering and leaving the room.
+
+          oneway void player_entered(in Player p);
+          oneway void player_left(in Player p);
+
+          // The room is also informed about items left in the
+          // room or removed from the room.
+
+          oneway void item_added(in Item i);
+          oneway void item_removed(in Item i);
+
+          // If the command from the user could not be dealt with
+          // in the game server, it is forwarded to the room.
+
+          oneway void send_command(
+               in Player p,
+               in string command);
+     };
+
+     // The Item objects are held in the GameServer and contain all
+     // relevant information of the location and state of an item.
+
+     // An item can either be with a player or in a room. We thus need
+     // to distinguish between these two possibilities.
+
+     enum ItemLocationDescriptor { inRoom, withPlayer };
+
+     union ItemLocation switch (ItemLocationDescriptor)
+     {
+          case inRoom: RoomID r;
+          case withPlayer: Player p;
+     };
+
+     interface Item : IPing
+     {
+          readonly attribute long item_id;
+          readonly attribute string item_name;
+          readonly attribute string description;
+          readonly attribute ItemLocation location;
+     };
+
+     // Interface of the room server offered to the game server
+
+     interface IRoomServer : IPing
+     {
+          // find_room() is used by the game server to obtain a
+          // reference to one particular room
+          
+          Room find_room(
+               in long n)
+               raises (room_not_found);
+     };
+
+     // Callback interface for the room server to contact the
+     // game server and the players
+
+     interface CBRoomServer : IPing
+     {
+          // unregister() is the opposite of register() and removes a room
+          // server and the rooms associated with it from the game
+
+          void unregister();
+
+          // Callback interface of the game server so that the room server
+          // can send its response back
+
+          void send_message(
+               in long room_number,
+               in Player p,
+               in string_sequence message)
+               raises (room_not_found, player_not_in_room);
+
+          // Callback interface of the game server so that the room server
+          // can send its response back
+
+          void broadcast_message(
+               in long room_number,
+               in string_sequence message)
+               raises (room_not_found);
+
+          // Move a player
+
+          void move_player(
+               in long room_number,
+               in Player p,
+               in RoomID new_room)
+               raises (room_not_found, cant_move_player);
+
+          // Move an item
+
+          void move_item(
+               in long room_number,
+               in Player p,
+               in long i,
+               in ItemLocation new_location)
+               raises (room_not_found, cant_move_item);
+     };
+
+     interface GameServer : IPing
+     {
+          // register() is used to register a new room server with the game
+          // server. This operation makes new rooms available to the game
+
+          CBRoomServer register(
+               in string user_name,
+               in string secret_hash,
+               in IRoomServer room_server)
+               raises (registration_failed);
+     };
+
+};

@@ -1,0 +1,92 @@
+#!/bin/sh
+
+export CLASSPATH=`pwd`/classes
+export SERVER="RoomServer"
+export PID_FILE=${SERVER}.pid
+export LOG_FILE=${SERVER}.log
+
+[ -d run ] || mkdir run
+cd run
+
+cmd=$1
+
+# Pop command from arguments
+test -n "$2" && shift
+test "x$1" = "xstart" && shift
+
+if [ "${cmd}" = "start" ]
+then
+
+    if [ -f ${PID_FILE} ]
+    then
+
+        pid=`cat ${PID_FILE}`
+
+        if [ -d /proc/${pid} ]
+        then
+            echo "${SERVER} already running."
+            exit 1
+        fi
+
+    fi
+
+    echo "Starting ${SERVER}..."
+    echo "" >> ${LOG_FILE}
+    # Run with arguments
+    nohup java -Dcom.sun.CORBA.ORBServerHost=`hostname` "adventure.${SERVER}Process" $@ 2>&1 >> ${LOG_FILE} &
+    echo "$!" > ${PID_FILE}
+    echo "${SERVER} started."
+
+elif [ "${cmd}" = "stop" ]
+then
+
+    if [ -f ${PID_FILE} ]
+    then
+        pid=`cat ${PID_FILE}`
+
+        if [ -d /proc/${pid} ]
+        then
+            echo "Stopping ${SERVER}..."
+            kill ${pid}
+        else
+            echo "${SERVER} not running."
+        fi
+
+        while [ -d /proc/${pid} ]
+        do
+            sleep 1
+        done
+
+        echo "${SERVER} stopped."
+
+    else
+
+        echo "${SERVER} not running."
+
+    fi
+
+elif [ "${cmd}" = "status" ]
+then
+
+    if [ -f ${PID_FILE} ]
+    then
+        pid=`cat ${PID_FILE}`
+
+        if [ -d /proc/${pid} ]
+        then
+            echo "${SERVER} running."
+        else
+            echo "${SERVER} not running."
+        fi
+
+    else
+
+        echo "${SERVER} not running."
+
+    fi
+
+else
+
+    echo "Usage: ${0} \{start\|stop\|status\}"
+
+fi
