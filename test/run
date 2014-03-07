@@ -1,0 +1,71 @@
+#!/bin/bash
+
+test_files=(
+    config-malformed-xml.xml
+    config-missing-credentials.xml
+    config-missing-maze.xml
+    config-bad-host.xml
+    config-bad-user.xml
+    config-bad-hash.xml
+    missing-config.xml
+)
+
+test_counter=0
+test_total=${#test_files[*]}
+test_total=$((test_total+1))
+
+bold_echo() {
+    local msg="$1"
+
+    echo "$(tput bold)$msg$(tput sgr0)"
+}
+
+message() {
+    local msg="$1..."
+
+    bold_echo "$msg"
+}
+
+run() {
+    local cmd=$@
+
+    # Bump the test counter
+    test_counter=$((test_counter+1))
+
+    # Stop any previous servers
+    make stop >/dev/null 2>&1
+
+    # Clean up log file
+    make clean-log >/dev/null 2>&1
+
+    echo
+    message "Running test $test_counter of $test_total: $(tput setaf 1)$cmd$(tput sgr0)"
+
+    $cmd
+    sleep 5
+    make log
+
+    # Kill any servers
+    make stop >/dev/null 2>&1
+}
+
+run_file_test() {
+    local config="../test/$1"
+
+    run "bash ./RoomServer start $config"
+}
+
+message "Compiling sources"
+make compile
+
+# Success test
+run "bash ./RoomServer start"
+
+# Failure tests
+for config in "${test_files[@]}"
+do
+    run_file_test $config
+done
+
+echo
+bold_echo "Completed all tests"

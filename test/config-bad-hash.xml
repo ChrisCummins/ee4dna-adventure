@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<!-- Adventure game room server configuration -->
+<adventure>
+
+    <credentials>
+        <host>corbaloc::aries.aston.ac.uk:11225/game_server</host>
+        <user>cummince</user>
+        <key>b31g2116b0491cad4e8684f8ed24a92041beea9cc589e8668fbc32e02b29bc0b</key>
+    </credentials>
+
+    <!-- The maze -->
+    <maze>
+        <width>10</width>
+        <height>10</height>
+    </maze>
+
+    <!-- Room descriptions -->
+    <rooms>
+        <description>Test</description>
+    </rooms>
+
+</adventure>
