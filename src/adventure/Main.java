@@ -1,5 +1,6 @@
 package adventure;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 
 import org.omg.CORBA.ORBPackage.InvalidName;
@@ -18,6 +19,8 @@ public abstract class Main {
      */
     public static final String DEFAULT_CONFIG = "../adventure.xml";
 
+    public static final String DEFAULT_SAVE = "../adventure.sav";
+
     /**
      * Run a room server. Optionally can be provided with a path to a
      * configuration file, else uses the default value.
@@ -31,9 +34,17 @@ public abstract class Main {
         try {
             SystemIO.log("Reading configuration file...");
             final Config config = new Config(getConfigPath(args));
-
-            SystemIO.log("Server is starting up...");
-            final RoomServerProcess ps = new RoomServerProcess(config);
+            final RoomServerProcess ps;
+            
+            if (fileExists(getSavePath(args))) {
+                SystemIO.log("Reading save file...");
+                
+                SystemIO.log("Server is starting up...");
+                ps = new RoomServerProcess(config);
+            } else {
+                SystemIO.log("Server is starting up...");
+                ps = new RoomServerProcess(config);
+            }
 
             SystemIO.log("Server is ready..");
             ps.run();
@@ -58,5 +69,13 @@ public abstract class Main {
 
     private static String getConfigPath(String[] args) {
         return args.length >= 1 ? args[0] : DEFAULT_CONFIG;
+    }
+
+    private static String getSavePath(String[] args) {
+        return args.length >= 2 ? args[1] : DEFAULT_SAVE;
+    }
+
+    private static boolean fileExists(final String path) {
+        return new File(path).isFile();
     }
 }

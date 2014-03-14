@@ -1,5 +1,7 @@
 package adventure;
 
+import java.io.Serializable;
+
 import org.omg.PortableServer.POA;
 
 /**
@@ -8,10 +10,12 @@ import org.omg.PortableServer.POA;
  * 
  * @author Chris Cummins
  */
-public class IRoomServerImpl extends IRoomServerPOA {
+public class IRoomServerImpl extends IRoomServerPOA implements Serializable {
 
-    protected final POA poa;
-    protected CBRoomServer rs;
+    private static final long serialVersionUID = -1055484291122727187L;
+
+    protected transient final POA poa;
+    protected transient CBRoomServer rs;
 
     /**
      * Create a new room server implementation.

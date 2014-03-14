@@ -1,5 +1,7 @@
 package adventure;
 
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -145,8 +147,16 @@ public final class RoomServerProcess extends Thread {
 
                 shutdown_started = true;
                 SystemIO.warning("Server shutdown started");
-
+                
                 try {
+                    SystemIO.log("Saving state to 'adventure.sav'");
+                    FileOutputStream fileOut =
+                            new FileOutputStream("adventure.sav");
+                            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                            out.writeObject(rsi);
+                            out.close();
+                            fileOut.close();
+                    
                     rs.unregister(); // Unregister with game server
                     orb.shutdown(false); // Initiate ORB shutdown
                 } catch (Exception e) {

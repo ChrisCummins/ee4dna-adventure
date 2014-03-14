@@ -1,5 +1,6 @@
 package adventure;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 import org.omg.PortableServer.POA;
@@ -11,12 +12,14 @@ import org.omg.PortableServer.POAPackage.WrongPolicy;
  * grid of rooms. Rooms are created on-demand and procedurally. The maze
  * configuration is defined in the maze XML configuration element. The child
  * nodes width and height determine the maze dimensions.
- * 
+ *
  * @author Chris Cummins
  */
-public final class Maze extends IRoomServerImpl {
+public final class Maze extends IRoomServerImpl implements Serializable {
 
-    private final DungeonRoomFactory factory;
+    private static final long serialVersionUID = 1150705004036881496L;
+
+    private transient final DungeonRoomFactory factory;
     private final HashMap<Integer, Room> maze;
     private final int mazeNumberMin;
     private final int mazeNumberMax;
