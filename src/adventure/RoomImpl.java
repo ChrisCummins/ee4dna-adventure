@@ -110,8 +110,8 @@ public class RoomImpl extends RoomPOA {
      */
 
     @Override
-    public void player_entered(final Player p) {
-        SystemIO.log("player_entered(" + p.user_name() + ")");
+    public synchronized void player_entered(final Player p) {
+        SystemIO.log("player_entered(" + playerString(p) + ")");
 
         // Notify other players of arrival
         for (final Player player : players)
@@ -123,8 +123,8 @@ public class RoomImpl extends RoomPOA {
     }
 
     @Override
-    public void player_left(final Player p) {
-        SystemIO.log("player_left(" + p.user_name() + ")");
+    public synchronized void player_left(final Player p) {
+        SystemIO.log("player_left(" + playerString(p) + ")");
 
         this.players.remove(p);
 
@@ -134,14 +134,23 @@ public class RoomImpl extends RoomPOA {
     }
 
     @Override
-    public void item_added(final Item i) {
-        SystemIO.log("item_added(" + i.item_name() + ")");
+    public synchronized void item_added(final Item i) {
+        SystemIO.log("item_added(" + itemString(i) + ")");
+
+        if (items.contains(i))
+            SystemIO.error("Attempted to add duplicate item " + itemString(i));
+
         items.add(i);
     }
 
     @Override
-    public void item_removed(final Item i) {
-        SystemIO.log("item_removed(" + i.item_name() + ")");
+    public synchronized void item_removed(final Item i) {
+        SystemIO.log("item_removed(" + itemString(i) + ")");
+
+        if (!items.contains(i))
+            SystemIO.error("Attempted to remove non-existent item "
+                    + itemString(i));
+
         items.remove(i);
     }
 
@@ -382,6 +391,16 @@ public class RoomImpl extends RoomPOA {
     // Match a relative direction
     private static boolean destinationIsRelativeDirection(final String direction) {
         return direction.matches("(north)|(east)|(south)|(west)");
+    }
+
+    // Stringify item
+    private static String itemString(final Item i) {
+        return i.item_id() + ":" + i.item_name();
+    }
+
+    // Stringify player
+    private static String playerString(final Player p) {
+        return p.user_name() + ":" + p.real_name();
     }
 
     // Get the help text for a given set of actions.
