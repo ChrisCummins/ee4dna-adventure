@@ -24,9 +24,11 @@ public class RoomImpl extends RoomPOA {
             "south", "west" };
 
     // Room properties
-    protected final int no;
-    protected final String user;
-    protected final CBRoomServer rs;
+    public final int no;
+    public final String user;
+    public final RoomID id;
+    public final ItemLocation location;
+    public final CBRoomServer rs;
 
     // Room state
     protected final HashSet<Action> actions;
@@ -61,7 +63,11 @@ public class RoomImpl extends RoomPOA {
 
         this.no = no;
         this.user = user;
+        this.id = new RoomID(user, no);
+        this.location = new ItemLocation();
         this.rs = rs;
+
+        location.r(this.id);
 
         this.actions = actions;
         this.players = new HashSet<Player>();
