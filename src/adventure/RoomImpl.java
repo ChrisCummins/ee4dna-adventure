@@ -31,9 +31,9 @@ public class RoomImpl extends RoomPOA {
     public final CBRoomServer rs;
 
     // Room state
-    protected final HashSet<Action> actions;
-    protected final HashSet<Player> players;
-    protected final HashSet<Item> items;
+    protected transient final HashSet<Action> actions;
+    protected transient final HashSet<Player> players;
+    protected transient final HashSet<Item> items;
 
     // Maze dimensions
     protected final int mazeSize;
