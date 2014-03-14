@@ -4,8 +4,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 import adventure.actions.Go;
+import adventure.actions.Release;
 import adventure.actions.Say;
 import adventure.actions.Shout;
+import adventure.actions.Take;
 
 /**
  * The base room class, offering the bare minimum of functionality to the
@@ -74,6 +76,8 @@ public class RoomImpl extends RoomPOA {
         this.actions.add(new Go(this));
         this.actions.add(new Shout(this));
         this.actions.add(new Say(this));
+        this.actions.add(new Take(this));
+        this.actions.add(new Release(this));
     }
 
     /**
