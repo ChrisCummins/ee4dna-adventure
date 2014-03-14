@@ -24,7 +24,7 @@ public final class Maze extends IRoomServerImpl {
     /**
      * Generate a new maze using the given configuration. Maze properties are
      * defined in the XML configuration file.
-     * 
+     *
      * @param cfg
      *            The configuration to use.
      * @param poa
@@ -47,7 +47,7 @@ public final class Maze extends IRoomServerImpl {
      * Attempts to return a given room within the maze. If the room number is
      * valid, a check is made to ensure the room exists. If it doesn't, it is
      * constructed, and then returned to the user.
-     * 
+     *
      * @param n
      *            The room number being requested.
      * @throws room_not_found

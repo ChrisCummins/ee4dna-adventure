@@ -15,7 +15,7 @@ import adventure.actions.Take;
  * in order to offer additional behaviour. Behaviour is added to rooms by adding
  * items to the actions hash set. When a command is sent to a room, the actions
  * are iterated over until an one successfully processes the command.
- * 
+ *
  * @author Chris Cummins
  */
 public class RoomImpl extends RoomPOA {
@@ -43,7 +43,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Construct a new basic room which implements the specified set of actions.
-     * 
+     *
      * @param no
      *            The room number.
      * @param user
@@ -88,7 +88,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Construct a new basic room.
-     * 
+     *
      * @param no
      *            The room number.
      * @param user
@@ -188,7 +188,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Send a message to a specific user.
-     * 
+     *
      * @param p
      *            Message recipient.
      * @param msg
@@ -196,8 +196,7 @@ public class RoomImpl extends RoomPOA {
      */
     public void sendMessage(final Player p, final String[] msg) {
         try {
-            if (players.contains(p)) // Only send message if player is in the
-                                     // room
+            if (players.contains(p)) // Only send message if player is in the room
                 rs.send_message(no, p, msg);
         } catch (room_not_found e) {
             SystemIO.error("Room not found!", e);
@@ -209,7 +208,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Send a message to a specific user.
-     * 
+     *
      * @param p
      *            Message recipient.
      * @param msg
@@ -221,7 +220,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Send a message to all of the players within the room.
-     * 
+     *
      * @param msg
      *            Message contents.
      */
@@ -232,7 +231,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Send a message to all of the players within the room.
-     * 
+     *
      * @param msg
      *            Message contents.
      */
@@ -243,7 +242,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Broadcast a message to all of the players on the server.
-     * 
+     *
      * @param msg
      *            Message contents.
      */
@@ -257,7 +256,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Broadcast a message to all of the players on the server.
-     * 
+     *
      * @param msg
      *            Message contents.
      */
@@ -267,7 +266,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Send a multi-line message to a specific player, one line at a time.
-     * 
+     *
      * @param p
      *            Message recipient.
      * @param msg
@@ -286,7 +285,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Move a player from the current room to a given destination.
-     * 
+     *
      * @param p
      *            Player to move.
      * @param dest
@@ -301,7 +300,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Move a player from the current room to a given destination.
-     * 
+     *
      * @param p
      *            Player to move.
      * @param dest
@@ -319,7 +318,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Send the help text to a given player.
-     * 
+     *
      * @param p
      *            Recipient player.
      */
@@ -329,7 +328,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Send the room description text to a given player.
-     * 
+     *
      * @param p
      *            Recipient player.
      */
@@ -339,7 +338,7 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Send the room description text to a given player.
-     * 
+     *
      * @param p
      *            Recipient player.
      * @param message
@@ -365,25 +364,27 @@ public class RoomImpl extends RoomPOA {
 
     /**
      * Convert a relative destination into an absolute room number.
-     * 
+     *
      * @param destination
      *            Destination string.
      * @return The destination room number, or invalidNo if destination is nor
      *         relative.
      */
     private int destinationToRoomNumber(final String destination) {
-        final int x = (no + mazeWidth / 2) % mazeWidth;       
+        final int x = (no + mazeWidth / 2) % mazeWidth;
         final int minRoomNumber = -mazeSize / 2;
         final int maxRoomNumber = mazeSize / 2;
 
         if (destination.matches("north"))
             return no + mazeWidth <= maxRoomNumber ? no + mazeWidth : invalidNo;
         else if (destination.matches("east"))
-            return (x + 1) % mazeWidth > x && (no + 1) <= maxRoomNumber ? no + 1 : invalidNo;
+            return (x + 1) % mazeWidth > x && (no + 1) <= maxRoomNumber ? no + 1
+                    : invalidNo;
         else if (destination.matches("south"))
             return no - mazeWidth >= minRoomNumber ? no - mazeWidth : invalidNo;
         else if (destination.matches("west"))
-            return (x - 1) % mazeWidth < x && (no - 1) >= minRoomNumber ? no - 1 : invalidNo;
+            return (x - 1) % mazeWidth < x && (no - 1) >= minRoomNumber ? no - 1
+                    : invalidNo;
         else
             return invalidNo; // Destination is not a relative direction
     }
