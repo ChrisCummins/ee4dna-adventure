@@ -41,6 +41,14 @@ public class Message implements Action {
         return false;
     }
 
+    /**
+     * Add a new player message
+     * 
+     * @param p
+     *            The message author
+     * @param message
+     *            String
+     */
     private synchronized void writeMessage(final Player p, final String message) {
         try {
             final PrintWriter out = new PrintWriter(new BufferedWriter(
@@ -53,6 +61,11 @@ public class Message implements Action {
         }
     }
 
+    /**
+     * Return the player messages
+     * 
+     * @return One message per element.
+     */
     private synchronized String[] readMessages() {
         try {
             final BufferedReader br = new BufferedReader(new FileReader(store));

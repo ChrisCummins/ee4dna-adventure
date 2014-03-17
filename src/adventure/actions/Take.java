@@ -28,10 +28,9 @@ public class Take implements Action {
         try {
             final ItemLocation location = new ItemLocation();
             location.p(p);
-            
-            room.rs.move_item(room.no, p,
-                    Integer.parseInt(cmd.replaceFirst("take\\s+", "")),
-                    location);
+
+            room.rs.move_item(room.no, p, Integer.parseInt(cmd.replaceFirst(
+                    "take\\s+", "")), location);
             room.sendMessage(p.real_name() + " picked up an item");
         } catch (NumberFormatException e) {
             room.sendMessage(p, "Not a valid item number!");

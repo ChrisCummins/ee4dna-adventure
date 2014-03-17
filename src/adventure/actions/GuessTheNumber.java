@@ -14,12 +14,12 @@ public class GuessTheNumber implements Action {
 
     private final RoomImpl room;
 
-    private String playerName;
+    // Our game state:
+    private String playerName = "";
     private int num;
 
     public GuessTheNumber(final RoomImpl room) {
         this.room = room;
-        this.playerName = "";
     }
 
     @Override
@@ -27,20 +27,22 @@ public class GuessTheNumber implements Action {
 
         if (cmd.matches("^play guess the number")) {
             if (playerName == "") {
+                // Start new Game
                 playerName = p.real_name();
                 num = new Random().nextInt(100);
                 room.sendMessage(p,
                         "Welcome to guess the number! Type /guess followed by your first guess");
                 SystemIO.log("gtn: Player " + p.user_name() + " started game");
             } else
+                // Game already going
                 room.sendMessage(p, "Sorry, someone else is already playing!");
 
             return true;
         } else if (cmd.matches("^guess\\s+.*")) {
 
-            if (p.real_name().matches(playerName))
+            if (p.real_name().matches(playerName)) // Attempt guess
                 guess(p, cmd.replaceFirst("guess\\s+", ""));
-            else {
+            else { // Not playing a game
                 if (playerName.matches("")) {
                     room.sendMessage(p, "You're not playing a game!");
                 } else {
@@ -56,6 +58,14 @@ public class GuessTheNumber implements Action {
         return false;
     }
 
+    /**
+     * Attempt a guess at the correct number
+     * 
+     * @param p
+     *            The guessing player
+     * @param guessString
+     *            The guess
+     */
     private void guess(final Player p, final String guessString) {
         try {
             int guess = Integer.parseInt(guessString);
@@ -78,7 +88,9 @@ public class GuessTheNumber implements Action {
         return "/play guess the number      - play a round of guess the number!";
     }
 
+    // Player left callback
     public void player_left(final Player p) {
+        // Free player lock
         if (p.real_name().matches(playerName)) {
             SystemIO.log("gtn: Player " + p.user_name() + " left room");
             playerName = "";
