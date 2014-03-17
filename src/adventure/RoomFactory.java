@@ -7,14 +7,14 @@ import org.omg.PortableServer.POAPackage.ServantNotActive;
 import org.omg.PortableServer.POAPackage.WrongPolicy;
 
 import adventure.rooms.DungeonRoom;
-import adventure.rooms.MessageWall;
+import adventure.rooms.MainRoom;
 
 /**
  * A utility class used to procedurally generate random dungeon rooms.
  * 
  * @author Chris Cummins
  */
-public class DungeonRoomFactory {
+public class RoomFactory {
 
     private final POA poa;
 
@@ -35,7 +35,7 @@ public class DungeonRoomFactory {
      * @throws ConfigParseException
      *             In case of error while parsing the configuration.
      */
-    public DungeonRoomFactory(final Config cfg, final POA poa)
+    public RoomFactory(final Config cfg, final POA poa)
             throws ConfigParseException {
         this.poa = poa;
         this.roomDescriptions = cfg.getDescriptions();
@@ -63,7 +63,7 @@ public class DungeonRoomFactory {
 
         final int index = new Random().nextInt(roomDescriptions.length);
         final String description = roomDescriptions[index];
-        final RoomImpl room = (n == 0) ? new MessageWall(n, user, rs,
+        final RoomImpl room = (n == 0) ? new MainRoom(n, user, rs,
                 mazeWidth, mazeHeight) : new DungeonRoom(n, user, description,
                 rs, mazeWidth, mazeHeight);
         final org.omg.CORBA.Object o = poa.servant_to_reference(room);

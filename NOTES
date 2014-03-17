@@ -1,0 +1,28 @@
+* take and release items
+    RoomImpl
+
+* Single and multiplayer functionality
+* Concurrency
+    Messages
+
+* Saving state
+    Messages
+
+
+TEST CASES
+
+Play guess the number
+
+
+[20:31:35] Khalid Ambu-Saidi, is already playing!
+[20:31:44] Khalid Ambu-Saidi has left the room.
+[20:31:57] Welcome to guess the number! Type /guess followed by your first guess
+
+
+Mon Mar 17 20:29:40 GMT 2014 OK:      player_entered(cummince:Christopher Cummins)
+Mon Mar 17 20:30:33 GMT 2014 OK:      player_entered(ambuskas:Khalid Ambu-Saidi)
+Mon Mar 17 20:31:16 GMT 2014 OK:      gtn: Player ambuskas started game
+Mon Mar 17 20:31:35 GMT 2014 OK:      gtn: Locked cummince from existing game
+Mon Mar 17 20:31:44 GMT 2014 OK:      gtn: Player ambuskas left room
+Mon Mar 17 20:31:44 GMT 2014 OK:      player_left(ambuskas:Khalid Ambu-Saidi)
+Mon Mar 17 20:31:57 GMT 2014 OK:      gtn: Player cummince started game

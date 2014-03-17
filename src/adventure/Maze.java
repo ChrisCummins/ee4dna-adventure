@@ -19,7 +19,7 @@ public final class Maze extends IRoomServerImpl implements Serializable {
 
     private static final long serialVersionUID = 1150705004036881496L;
 
-    private transient final DungeonRoomFactory factory;
+    private transient final RoomFactory factory;
     private final HashMap<Integer, Room> maze;
     private final int mazeNumberMin;
     private final int mazeNumberMax;
@@ -40,7 +40,7 @@ public final class Maze extends IRoomServerImpl implements Serializable {
 
         final int mazeSize = cfg.getMazeWidth() * cfg.getMazeHeight();
 
-        this.factory = new DungeonRoomFactory(cfg, poa);
+        this.factory = new RoomFactory(cfg, poa);
         this.maze = new HashMap<Integer, Room>();
         this.mazeNumberMin = -mazeSize / 2;
         this.mazeNumberMax = mazeSize / 2;
