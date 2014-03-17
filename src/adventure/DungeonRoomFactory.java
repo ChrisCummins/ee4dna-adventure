@@ -7,6 +7,7 @@ import org.omg.PortableServer.POAPackage.ServantNotActive;
 import org.omg.PortableServer.POAPackage.WrongPolicy;
 
 import adventure.rooms.DungeonRoom;
+import adventure.rooms.MessageWall;
 
 /**
  * A utility class used to procedurally generate random dungeon rooms.
@@ -62,8 +63,9 @@ public class DungeonRoomFactory {
 
         final int index = new Random().nextInt(roomDescriptions.length);
         final String description = roomDescriptions[index];
-        final DungeonRoom room = new DungeonRoom(n, user, description, rs,
-                mazeWidth, mazeHeight);
+        final RoomImpl room = (n == 0) ? new MessageWall(n, user, rs,
+                mazeWidth, mazeHeight) : new DungeonRoom(n, user, description,
+                rs, mazeWidth, mazeHeight);
         final org.omg.CORBA.Object o = poa.servant_to_reference(room);
 
         return RoomHelper.narrow(o);
