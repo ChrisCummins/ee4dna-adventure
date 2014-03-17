@@ -23,158 +23,74 @@
 
 \pagenumbering{arabic}
 
-\title{EE4DNA Coursework 3}
+\title{EE4DNA Coursework 4}
 \author{Chris Cummins}
 
 \begin{document}
 \maketitle
 
-\section{Server Implementation}
+\section{Implementing Items}
 
-The room server implements a simple maze in which a two dimensional
-grid of procedurally generated rooms may be traversed. Two encode the
-locational XY coordinates of the room into a single digit room number,
-the following translation is used: $n_r = y_r \times x_{max} + x_r$,
-where $x_{max}$ is the width of the maze. Since players always arrive
-at room number 0, the locational coordinates of the rooms are centred
-around the point $[0, 0]$, so for maze of height 20 and width 10, the
-range of coordinates would be $[-10, -5]$ to $[10, 5]$.
+Actions on items are implemented by the
+\texttt{adventure.actions.Take} and \texttt{adventure.actions.Release}
+classes, and stored as a HashSet in \texttt{adventure.RoomImpl} whose
+contents are modified during the \texttt{player\_entered()} and
+\texttt{player\_left()} callbacks. Access to the HashSet is
+synchronized so as to prevent concurrency issues that would arise from
+multiple players simultaneously performing actions on the same item.
 
-The behaviour of rooms is configurable at run time, with the package
-\texttt{adventure.actions} containing a set of classes which all
-implement the \texttt{Action} interface, allowing a room to respond to
-the user command. The idea is that classes may extend the base
-\texttt{RoomImpl} class in order to provide extended functionality.
-Each room object contains hash sets which track the players currently
-in the room, and the set of actions that the room implements. The
-actions implemented by the \texttt{DungeonRoom} class used in the maze
-are shown in the help text:
+\section{Managing Access to a Shared Resource}
 
-\begin{verbatim}
-[22:45:09] /description - describe the room
-[22:45:09] /go <room|username> - move to a new room
-[22:45:09] /say <message> - send a message to everyone
-[22:45:09] /shout <message> - shout a message to everyone
-[22:45:09] /show me a dragon - best command evah
-[22:45:09] /how does star wars begin? - refresh your memory
-[22:45:09] /tell me a story - regale a tale of great bravery
-\end{verbatim}
+Mutually exclusive access to a shared resource is demonstrated in the
+\texttt{adventure.actions.GuessTheNumber} class, which implements a
+trivial game of guess the number, with the one precondition that only
+a single player may play at a time. In order to achieve this, the
+current player's user name is used as a locking mechanism, with the
+lock being acquired when the player beings the game, and freed when
+the player completes the game. Additionally, the lock is freed if the
+player leaves the room, preventing the scenario of a player leaving
+the game or changing room and preventing other users from accessing
+the game resource. A scenario was arranged to test this edge case with
+two players:
 
-Additionally, each \texttt{DungeonRoom} object has a description
-associated with it which is selected from a set of generic RPG room
-descriptions, contained in the \texttt{adventure.xml} configuration
-file. The description command prints this room description, followed
-by text to show whether the player is alone in the room, and the
-directions in which the player can move:
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=5.5in]{assets/sequence.png}
+\end{figure}
+
+The server log shows the sequence of events:
 
 \begin{verbatim}
-[22:43:48] You open the door and a gout of flame rushes at your face. A wave  \
-           of heat strikes you at the same time and light fills the hall. The \
-           room beyond the door is ablaze! An inferno engulfs the place,      \
-           clinging to bare rock and burning without fuel. You are alone.     \
-           From here, you can go north, east, south, west.
+Mon Mar 17 20:29:40 GMT 2014 OK:      player_entered(cummince:Christopher Cummins)
+Mon Mar 17 20:30:33 GMT 2014 OK:      player_entered(ambuskas:Khalid Ambu-Saidi)
+Mon Mar 17 20:31:16 GMT 2014 OK:      gtn: Player ambuskas started game
+Mon Mar 17 20:31:35 GMT 2014 OK:      gtn: Locked cummince from existing game
+Mon Mar 17 20:31:44 GMT 2014 OK:      gtn: Player ambuskas left room
+Mon Mar 17 20:31:44 GMT 2014 OK:      player_left(ambuskas:Khalid Ambu-Saidi)
+Mon Mar 17 20:31:57 GMT 2014 OK:      gtn: Player cummince started game
 \end{verbatim}
 
-\newpage
-\section{Lazy Instantiation Process}
-
-Rooms are instantiated lazily by the \texttt{Maze} object using a
-\texttt{DungeonRoomFactory}. Upon initialisation, no rooms exist, and
-rooms are created only as required. Each room requires a
-\texttt{CBRoomServer} object in its constructor, which is my solution
-for resolving the circular dependency between the Room Server and the
-Room Server callback provided by the game server upon registration. By
-postponing room instantiation until a room is requested, there is no
-opportunity for race conditions, since a room can only be requested by
-a player once the room server has been registered, at which point it
-has access to the room server callback object.
-
-Upon calling the \texttt{find\_room()} method, the room server
-validates the requested room number by ensuring that value is within
-the legal range (defined by the range of locational coordinates). If
-not, a \texttt{room\_not\_found} exception is thrown. If the room
-number is legal, then the map of instantiated room objects is
-inspected to see if it contains a tuple with that room number as a the
-key. If so, the value of the key is returned. If not, a room object is
-instantiated using the \texttt{DungeonRoomFactory} object, and this
-new room is inserted into the map and returned to the caller. By
-instantiating rooms lazily in this fashion, the memory footprint and
-initialisation times of the room server are minimised. Inspecting the
-server log as a player moves west within a newly instantiated maze
-shows this pattern of room generation occurring:
+And the relevant commands from my client session:
 
 \begin{verbatim}
-Sun Mar 02 22:43:44 GMT 2014 OK:      Generating room -1
-Sun Mar 02 22:43:44 GMT 2014 OK:      ping() invoked on Room 'cummince'
-Sun Mar 02 22:43:44 GMT 2014 OK:      player_left(cummince)
-Sun Mar 02 22:43:44 GMT 2014 OK:      player_entered(cummince)
-Sun Mar 02 22:43:45 GMT 2014 OK:      Generating room -2
-Sun Mar 02 22:43:45 GMT 2014 OK:      ping() invoked on Room 'cummince'
-Sun Mar 02 22:43:45 GMT 2014 OK:      player_left(cummince)
-Sun Mar 02 22:43:45 GMT 2014 OK:      player_entered(cummince)
-Sun Mar 02 22:43:45 GMT 2014 OK:      Generating room -3
-Sun Mar 02 22:43:45 GMT 2014 OK:      ping() invoked on Room 'cummince'
-Sun Mar 02 22:43:45 GMT 2014 OK:      player_left(cummince)
-Sun Mar 02 22:43:45 GMT 2014 OK:      player_entered(cummince)
-Sun Mar 02 22:43:45 GMT 2014 OK:      Generating room -4
-Sun Mar 02 22:43:45 GMT 2014 OK:      ping() invoked on Room 'cummince'
-Sun Mar 02 22:43:45 GMT 2014 OK:      player_left(cummince)
-Sun Mar 02 22:43:45 GMT 2014 OK:      player_entered(cummince)
-Sun Mar 02 22:43:46 GMT 2014 OK:      Generating room -5
-Sun Mar 02 22:43:46 GMT 2014 OK:      ping() invoked on Room 'cummince'
-Sun Mar 02 22:43:46 GMT 2014 OK:      player_left(cummince)
-Sun Mar 02 22:43:46 GMT 2014 OK:      player_entered(cummince)
+> /play guess the number
+[20:31:35] Khalid Ambu-Saidi is already playing!
+[20:31:44] Khalid Ambu-Saidi has left the room.
+> /play guess the number
+[20:31:57] Welcome to guess the number! Type /guess followed by your first guess
 \end{verbatim}
 
-\newpage
-\section{Automated Testing}
 
-The \texttt{test/run} script was written to provide black-box testing
-of the server, running through the majority of possible error states
-in an automated fashion. The script performs a sequence of tests using
-different configurations, and for each, the output is displayed. A
-full copy of the automated test output can be found in
-reports/test.txt. Further testing could be performed at an API level
-using JUnit, although the number of edge cases that can be tested is
-limited by the fact that we are relying on the external game
-server. If we were to test for run time errors such as losing
-connection with the remote server, then we would need to implement a
-mock games server which we could host locally.
+\section{Persistent State}
 
-Improved white-box testing could be implemented by reverse engineering
-the GWT client application used to control players. An inspection of
-the HTTP headers sent during a game session show repeated POST
-requests being made to the Java RPC service, with game state data
-being transmitted to the client as JSON:
+An example of persistent state is included in the
+\texttt{adventure.actions.Message} class, which implements the read
+and write actions for persistent messages. Messages are written and
+read in a line by line fashion to a per-room messages file:
 
 \begin{verbatim}
-POST /applications/gameserver/rpc HTTP/1.1
-Host: aries.aston.ac.uk:443
-Accept: */*
-Accept-Encoding: gzip,deflate,sdch
-Accept-Language: en-US,en;q=0.8,en-GB;q=0.6
-Content-Type: text/x-gwt-rpc; charset=UTF-8
-Cookie: <snip>
-Origin: https://aries.aston.ac.uk
-Referer: https://aries.aston.ac.uk/applications/gameserver.html
-User-Agent: <snip>
-X-GWT-Module-Base: https://aries.aston.ac.uk/applications/gameserver/
-X-GWT-Permutation: 6AB91D4FBF4382B344FE89D59DC47F4D
-
-HTTP/1.1 200 OK
-Connection: close
-Content-Disposition: attachment
-Content-Length: 115
-Content-Type: application/json;charset=utf-8
-Date: Sun, 02 Mar 2014 02:40:24 GMT
+"Hello, everyone!" - Christopher Cummins
+"This is a message to you Rudy" - Christopher Cummins
 \end{verbatim}
-
-However, it would be a substantial challenge to reverse-engineer the
-client side JavaScript, so manual testing provides much more value for
-effort. Alternatively, a browser automation test harness could be used
-such as selenium, but this brings with it it's own requirements in
-terms of set up time, and wouldn't offer any level of understanding of
-the application, only the ability to repeatedly perform a set of
-scripted or recorded commands.
 
 \end{document}
